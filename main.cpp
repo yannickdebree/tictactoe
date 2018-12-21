@@ -5,11 +5,12 @@ using namespace std;
 int player = 2, round = 0, choice;
 char square[10] = {'0', '1', '2', '3', '4', '5' , '6', '7', '8', '9'};
 
+bool caseEvenChoosen();
 bool hasWin();
 char returnSymbol();
-void vue();
-void playerTurn();
 void iATurn();
+void playerTurn();
+void vue();
 
 int main()
 {
@@ -28,7 +29,8 @@ int main()
                 break;
         }
         square[choice] = returnSymbol();
-    }while(!hasWin() && !(round == 5 && player == 1));
+    }
+    while(!hasWin() && !(round == 5 && player == 1));
     system("clear");
     vue();
     string message;
@@ -53,7 +55,20 @@ int main()
     return 0;
 }
 
-bool hasWin(){
+bool caseEvenChoosen()
+{
+    if(square[choice] == 'X' || square[choice] == 'O')
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool hasWin()
+{
     char symbol = returnSymbol();
 
     bool firstRowCompleted = (symbol == square[1] && square[1] == square[2] && square[2] == square[3] );
@@ -91,22 +106,36 @@ char returnSymbol()
     return (player == 1) ? 'X' : 'O';
 }
 
+void iATurn()
+{
+    bool err = true;
+    while(err){
+        choice = (rand() % 9) + 1;
+        if(!caseEvenChoosen())
+        {
+            err = false;
+        }
+    }
+}
+
 void playerTurn()
 {
     bool err = true;
     while(err){
-        cout << "Player " << returnSymbol() << ", make your choice : ";
+        cout << "Player, make your choice : ";
         cin >> choice;
         if(cin.fail()) {
-            err = true;
             cout << "Enter an integer number !"<<endl;
             cin.clear();
             cin.ignore(256,'\n');
         }
         else if(choice > 9 || choice < 1)
         {
-            err = true;
             cout << "Enter a number between 1 and 9 ! " << endl;
+        }
+        else if(caseEvenChoosen())
+        {
+            cout << "The case has even been choosen ! " << endl;
         }
         else
         {
@@ -115,15 +144,8 @@ void playerTurn()
     }
 }
 
-void iATurn()
+void vue()
 {
-    while(choice > 9 || choice < 1){
-        cout << "Player " << returnSymbol() << ", make your choice : ";
-        cin >> choice;
-    }
-}
-
-void vue(){
     system("clear");
 	cout << "Tic Tac Toe" << endl;
 	cout << "Round " << round << endl;
