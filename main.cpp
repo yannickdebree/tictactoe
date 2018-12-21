@@ -109,7 +109,8 @@ char returnSymbol()
 void iATurn()
 {
     bool err = true;
-    while(err){
+    while(err)
+    {
         choice = (rand() % 9) + 1;
         if(!caseEvenChoosen())
         {
