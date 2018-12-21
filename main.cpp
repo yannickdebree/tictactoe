@@ -6,7 +6,7 @@ int player = 2, round = 0, choice;
 char square[10] = {'0', '1', '2', '3', '4', '5' , '6', '7', '8', '9'};
 
 bool hasWin();
-char returnSymbol(int p = player);
+char returnSymbol();
 void vue();
 void playerTurn();
 void iATurn();
@@ -29,7 +29,6 @@ int main()
         }
         square[choice] = returnSymbol();
     }while(!hasWin() && !(round == 5 && player == 1));
-
     system("clear");
     vue();
     string message;
@@ -50,6 +49,7 @@ int main()
         message = "Equality !";
     }
     cout << message;
+
     return 0;
 }
 
@@ -86,19 +86,31 @@ bool hasWin(){
     }
 }
 
-char returnSymbol(int p = player)
+char returnSymbol()
 {
-    return (p == 1) ? 'X' : 'O';
+    return (player == 1) ? 'X' : 'O';
 }
 
 void playerTurn()
 {
-    while(choice > 9 || choice < 1){
+    bool err = true;
+    while(err){
         cout << "Player " << returnSymbol() << ", make your choice : ";
         cin >> choice;
-        if(square[choice] == returnSymbol() || square == returnSymbol(player + 1))
+        if(cin.fail()) {
+            err = true;
+            cout << "Enter an integer number !"<<endl;
+            cin.clear();
+            cin.ignore(256,'\n');
+        }
+        else if(choice > 9 || choice < 1)
         {
-
+            err = true;
+            cout << "Enter a number between 1 and 9 ! " << endl;
+        }
+        else
+        {
+            err = false;
         }
     }
 }
