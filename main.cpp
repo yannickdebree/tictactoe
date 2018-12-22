@@ -1,14 +1,25 @@
 #include <iostream>
 #include <stdlib.h>
+#include <vector>
+
 using namespace std;
 
 int player = 2, round = 0, choice;
-char square[10] = {'0', '1', '2', '3', '4', '5' , '6', '7', '8', '9'};
+// char square[10] = {'0', '1', '2', '3', '4', '5' , '6', '7', '8', '9'};
+char square[10] = {'0', 'X', 'O', 'X', '4', 'O' , '6', 'X', '8', '9'};
 
 bool caseEvenChoosen();
 bool hasWin();
+bool hasWin(int p);
 char returnSymbol();
+char returnSymbol(int p);
+int Min(char state[10], int deep);
+int Max(char state[10], int deep);
+int returnStateValue(char state[10]);
+int twoSeriesNumber(char state[10]);
+int twoSeriesNumber(char state[10], int player);
 void iATurn();
+
 void playerTurn();
 void vue();
 
@@ -39,10 +50,10 @@ int main()
         switch(player)
         {
             case 1:
-                message = "You won !";
+                message = "You're the winner !";
                 break;
             case 2:
-                message = "IA won...";
+                message = "You're the looser...";
                 break;
         }
     }
@@ -69,7 +80,12 @@ bool caseEvenChoosen()
 
 bool hasWin()
 {
-    char symbol = returnSymbol();
+    hasWin(player);
+}
+
+bool hasWin(int p)
+{
+    char symbol = returnSymbol(p);
 
     bool firstRowCompleted = (symbol == square[1] && square[1] == square[2] && square[2] == square[3] );
     bool secondRowCompleted = (symbol == square[4] && square[4] == square[5] && square[5] == square[6] );
@@ -103,11 +119,185 @@ bool hasWin()
 
 char returnSymbol()
 {
-    return (player == 1) ? 'X' : 'O';
+    return returnSymbol(player);
+}
+
+char returnSymbol(int p)
+{
+    // return (p == 1) ? 'X' : 'O';
+    return (p == 1) ? 'O' : 'X';
+}
+
+int Min(char state[10], int deep)
+{
+    if(deep == 0 || hasWin() || hasWin(1))
+    {
+        return returnStateValue(state);
+    }
+    int min = 10000, temp;
+    char tempSymbol;
+    for(int i = 1; i < 10; ++i)
+    {
+        choice = i;
+        if(!caseEvenChoosen())
+        {
+            tempSymbol = state[choice];
+            state[choice] = returnSymbol();
+            temp = Max(state, deep - 1);
+            if(temp < min)
+            {
+                min = temp;
+            }
+            state[choice] = tempSymbol;
+        }
+    }
+    return min;
+}
+
+int Max(char state[10], int deep)
+{
+    if(deep == 0 || hasWin() || hasWin(1))
+    {
+        return returnStateValue(state);
+    }
+    int max = -10000, temp;
+    char tempSymbol;
+    for(int i = 1; i < 10; ++i)
+    {
+        choice = i;
+        if(!caseEvenChoosen())
+        {
+            tempSymbol = state[choice];
+            state[choice] = returnSymbol();
+            temp = Min(state, deep - 1);
+            if(temp > max)
+            {
+                max = temp;
+            }
+            state[choice] = tempSymbol;
+        }
+    }
+    return max;
+}
+
+int returnStateValue(char state[10])
+{
+    int turnsPlayed = 0;
+    for(int i = 1; i < 10; ++i)
+    {
+        if(state[i] == returnSymbol() || state[i] == returnSymbol(1))
+        {
+            turnsPlayed++;
+        }
+    }
+    bool playerWin = hasWin(1);
+    bool iAWin = hasWin();
+    if(playerWin)
+    {
+        return -10000 + turnsPlayed;
+    }
+    else if(iAWin)
+    {
+        return 10000 - turnsPlayed;
+    }
+    else if(!playerWin && !iAWin && turnsPlayed == 9 )
+    {
+        return 0;
+    }
+    return twoSeriesNumber(state) - twoSeriesNumber(state, 1);
+}
+
+int twoSeriesNumber(char state[10])
+{
+    return twoSeriesNumber(state, player);
+}
+
+int twoSeriesNumber(char state[10], int p)
+{
+    int seriesNumber = 0;
+    char symbol = returnSymbol(p);
+
+    for(int i = 1; i < 10; ++i)
+    {
+        if(i != 1 && i != 4 && i != 7)
+        {
+            if(symbol == state[i - 1] && state[i - 1] == state[i])
+            {
+                seriesNumber++;
+            }
+        }
+        if(i != 3 && i != 6 && i != 9)
+        {
+            if(symbol == state[i] && state[i] == state[i + 1])
+            {
+                seriesNumber++;
+            }
+        }
+        if(i != 1 && i != 2 && i != 3)
+        {
+            if(symbol == state[i - 3] && state[i - 3] == state[i])
+            {
+                seriesNumber++;
+            }
+        }
+        if(i != 7 && i != 8 && i != 9)
+        {
+            if(symbol == state[i] && state[i] == state[i + 3])
+            {
+                seriesNumber++;
+            }
+        }
+    }
+    return seriesNumber;
 }
 
 void iATurn()
 {
+    cout << "Tour de l'IA" << endl;
+    char tempSquare[10];
+    copy(begin(square), end(square), begin(tempSquare));
+    int deep = 10, max_val = -10000, temp;
+    char tempSymbol;
+    vector<int> bestChoices;
+
+    // for(int i = 1; i < 10; ++i)
+    for(int i = 1; i < 2; ++i)
+    {
+        cout << "- Pour choice = i = " << i << " : " << endl;
+        choice = i;
+        if(!caseEvenChoosen())
+        {
+            cout << "Ca marche" << endl;
+            tempSymbol = tempSquare[choice];
+            tempSquare[choice] = returnSymbol();
+            temp = Min(tempSquare, deep - 1);
+            cout << "temp : " << temp;
+        /*
+            if(temp > max_val)
+            {
+                max_val = temp;
+                bestChoice = choice;
+            }
+            tempSquare[choice] = tempSymbol;
+        */
+            bestChoices.push_back(choice);
+        }
+        else
+        {
+            // cout << "Déjà pris..." << endl;
+        }
+    }
+    // choice = bestChoice;
+    string test;
+    cout << "Meilleurs choix pour l'IA : " << endl;
+    int bestChoicesNbr = bestChoices.size();
+    for(int i = 0; i < bestChoicesNbr; ++i)
+    {
+        cout << " - " << bestChoices[i] << endl;
+    }
+    cout << "Entrez le mot 'suivant' : ";
+    cin >> test;
+
     bool err = true;
     while(err)
     {
@@ -123,10 +313,10 @@ void playerTurn()
 {
     bool err = true;
     while(err){
-        cout << "Player, make your choice : ";
+        cout << "Player " << returnSymbol() << ", make your choice : ";
         cin >> choice;
         if(cin.fail()) {
-            cout << "Enter an integer number !"<<endl;
+            cout << "Enter an integer number !" << endl;
             cin.clear();
             cin.ignore(256,'\n');
         }
